@@ -1861,10 +1861,8 @@ function prCheck(actionContext) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const approvalsRequiredString = core_1.getInput('approvalsRequired');
-            const approvalsRequired = approvalsRequiredString
-                ? Number(approvalsRequiredString)
-                : 0;
-            const pullRequests = yield actionContext.octokit.pulls.list(Object.assign({}, actionContext.context.repo));
+            const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0;
+            const pullRequests = yield actionContext.octokit.pulls.list(Object.assign(Object.assign({}, actionContext.context.repo), { state: 'open', sort: 'updated' }));
             const fullInfoPromise = pullRequests.data.map((pull) => __awaiter(this, void 0, void 0, function* () {
                 return ({
                     reviews: yield actionContext.octokit.pulls.listReviews(Object.assign(Object.assign({}, actionContext.context.repo), { pull_number: pull.number })),
@@ -1879,10 +1877,12 @@ function prCheck(actionContext) {
             }
             else {
                 const rerunCandidates = fullInfo.filter(pull => isApproved(pull.reviews.data, approvalsRequired) &&
-                    (!allProjectsAlreadyCompleted(pull.checks.data) ||
-                        branchBehindDevelop(pull.pr.data)));
+                    (!allProjectsAlreadyCompleted(pull.checks.data) || branchBehindDevelop(pull.pr.data)));
                 if (rerunCandidates.length > 0) {
-                    actionContext.setOutput('pullRequestToRerun', rerunCandidates[0].pr.data.number.toString());
+                    const rerun = rerunCandidates[0];
+                    actionContext.setOutput('pullRequestToRerun', rerun.pr.data.number.toString());
+                    actionContext.setOutput('headRef', rerun.pr.data.head.ref);
+                    actionContext.setOutput('baseRef', rerun.pr.data.base.ref);
                 }
             }
         }
@@ -1896,19 +1896,17 @@ exports.prCheck = prCheck;
  * Helper functions
  */
 function allProjectsCheckHasInProgressStatus(checkRunsData) {
-    return (checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) &&
-        check.status.toLowerCase() === 'in_progress').length > 0);
+    return (checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && check.status.toLowerCase() === 'in_progress')
+        .length > 0);
 }
 function isApproved(reviews, approvalsRequired) {
-    return (reviews.filter(review => review.state === 'APPROVED').length >=
-        approvalsRequired);
+    return reviews.filter(review => review.state === 'APPROVED').length >= approvalsRequired;
 }
 function allProjectsAlreadyCompleted(checkRunsData) {
-    return (checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunCompleted(check)).length > 0);
+    return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunCompleted(check)).length > 0;
 }
 function checkRunCompleted(run) {
-    return (run.conclusion.toLowerCase() === 'success' ||
-        run.conclusion.toLowerCase() === 'failure');
+    return run.conclusion.toLowerCase() === 'success' || run.conclusion.toLowerCase() === 'failure';
 }
 function allProjectsCheckRun(run) {
     return run.name === 'All Projects';

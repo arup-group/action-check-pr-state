@@ -51,7 +51,10 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
       )
 
       if (rerunCandidates.length > 0) {
-        actionContext.setOutput('pullRequestToRerun', rerunCandidates[0].pr.data.number.toString())
+        const rerun = rerunCandidates[0]
+        actionContext.setOutput('pullRequestToRerun', rerun.pr.data.number.toString())
+        actionContext.setOutput('headRef', rerun.pr.data.head.ref)
+        actionContext.setOutput('baseRef', rerun.pr.data.base.ref)
       }
     }
   } catch (error) {
