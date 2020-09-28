@@ -1,18 +1,24 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+import {debug, setFailed, getInput, setOutput} from '@actions/core'
+import * as GitHub from '@actions/github'
+import {context} from '@actions/github'
+import {prCheck} from './logic'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    debug('start action')
+    const token = process.env.GITHUB_TOKEN
+    if (!token) throw ReferenceError('No Token found')
+    debug('attempt to run action')
+    await prCheck({
+      debug,
+      setFailed,
+      getInput,
+      setOutput,
+      octokit: GitHub.getOctokit(token),
+      context
+    })
   } catch (error) {
-    core.setFailed(error.message)
+    setFailed(error.message)
   }
 }
 
