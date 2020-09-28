@@ -17,7 +17,9 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
     const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0
 
     const pullRequests = await actionContext.octokit.pulls.list({
-      ...actionContext.context.repo
+      ...actionContext.context.repo,
+      state: 'open',
+      sort: 'updated'
     })
 
     const fullInfoPromise = pullRequests.data.map(async pull => ({
