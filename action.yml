@@ -2,7 +2,7 @@ name: 'Pr Checks'
 description: 'Return if all checks are successful'
 author: 'peterjgrainger'
 inputs:
-  requiredReviews:
+  approvalsRequired:
     required: true
     description: 'number of reviews required'
 runs:
