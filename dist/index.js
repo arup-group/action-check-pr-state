@@ -1877,6 +1877,7 @@ function prCheck(actionContext) {
             }
             else {
                 const rerunCandidates = fullInfo.filter(pull => isApproved(pull.reviews.data, approvalsRequired) &&
+                    !conflicted(pull.pr.data) &&
                     (!allProjectsAlreadyCompleted(pull.checks.data) || branchBehindDevelop(pull.pr.data)));
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1913,6 +1914,9 @@ function allProjectsCheckRun(run) {
 }
 function branchBehindDevelop(pr) {
     return pr.mergeable_state.toLowerCase() === 'behind';
+}
+function conflicted(pr) {
+    return pr.mergeable_state.toLowerCase() === 'dirty';
 }
 
 

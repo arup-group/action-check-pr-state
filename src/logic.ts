@@ -47,6 +47,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
       const rerunCandidates = fullInfo.filter(
         pull =>
           isApproved(pull.reviews.data, approvalsRequired) &&
+          !conflicted(pull.pr.data) &&
           (!allProjectsAlreadyCompleted(pull.checks.data) || branchBehindDevelop(pull.pr.data))
       )
 
@@ -90,4 +91,8 @@ function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
 
 function branchBehindDevelop(pr: PullsGetResponseData): boolean {
   return pr.mergeable_state.toLowerCase() === 'behind'
+}
+
+function conflicted(pr: PullsGetResponseData): boolean {
+  return pr.mergeable_state.toLowerCase() === 'dirty'
 }
