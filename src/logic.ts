@@ -44,12 +44,22 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
     if (checkInProgress) {
       actionContext.debug('check in progress')
     } else {
-      const rerunCandidates = fullInfo.filter(
-        pull =>
-          isApproved(pull.reviews.data, approvalsRequired) &&
-          !conflicted(pull.pr.data) &&
-          (!allProjectsAlreadyCompleted(pull.checks.data) || branchBehindDevelop(pull.pr.data))
-      )
+      actionContext.debug('No Check in progress')
+      const rerunCandidates = fullInfo.filter(pull => {
+        const approved = isApproved(pull.reviews.data, approvalsRequired)
+        actionContext.debug(`Has two approvals: ${approved}`)
+
+        const prConflicted = conflicted(pull.pr.data)
+        actionContext.debug(`Conflicted PR: ${conflicted}`)
+
+        const completed = allProjectsAlreadyCompleted(pull.checks.data)
+        actionContext.debug(`Already in completed state: ${completed}`)
+
+        const behind = branchBehindDevelop(pull.pr.data)
+        actionContext.debug(`behind: ${behind}`)
+
+        return approved && !prConflicted && (!completed || behind)
+      })
 
       if (rerunCandidates.length > 0) {
         const rerun = rerunCandidates[0]
