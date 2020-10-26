@@ -55,8 +55,8 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const prConflicted = conflicted(pull.pr.data)
         actionContext.debug(`Conflicted PR: ${prConflicted}`)
 
-        const completed = allProjectsAlreadyCompleted(pull.checks.data)
-        actionContext.debug(`Already in completed state: ${completed}`)
+        const failed = allProjectsFailed(pull.checks.data)
+        actionContext.debug(`Already in completed state: ${failed}`)
 
         const behind = branchBehindDevelop(pull.pr.data)
         actionContext.debug(`behind: ${behind}`)
@@ -64,7 +64,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const prDraft = draft(pull.pr.data)
         actionContext.debug(`draft: ${prDraft}`)
 
-        return !prDraft && approved && !prConflicted && (!completed || behind)
+        return !prDraft && approved && !prConflicted && !failed && behind
       })
 
       if (rerunCandidates.length > 0) {
@@ -93,12 +93,12 @@ function isApproved(reviews: PullsListReviewsResponseData, approvalsRequired: nu
   return reviews.filter(review => review.state === 'APPROVED').length >= approvalsRequired
 }
 
-function allProjectsAlreadyCompleted(checkRunsData: ChecksListForRefResponseData): boolean {
-  return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunCompleted(check)).length > 0
+function allProjectsFailed(checkRunsData: ChecksListForRefResponseData): boolean {
+  return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunFailed(check)).length > 0
 }
 
-function checkRunCompleted(run: ChecksGetResponseData): boolean {
-  return run.conclusion.toLowerCase() === 'success' || run.conclusion.toLowerCase() === 'failure'
+function checkRunFailed(run: ChecksGetResponseData): boolean {
+  return run.conclusion.toLowerCase() === 'failure'
 }
 
 function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
