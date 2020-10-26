@@ -56,7 +56,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         actionContext.debug(`Conflicted PR: ${prConflicted}`)
 
         const failed = allProjectsFailed(pull.checks.data)
-        actionContext.debug(`Already in completed state: ${failed}`)
+        actionContext.debug(`PR failed: ${failed}`)
 
         const behind = branchBehindDevelop(pull.pr.data)
         actionContext.debug(`behind: ${behind}`)
@@ -64,7 +64,10 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const prDraft = draft(pull.pr.data)
         actionContext.debug(`draft: ${prDraft}`)
 
-        return !prDraft && approved && !prConflicted && !failed && behind
+        const success = allProjectsSuccess(pull.checks.data)
+        actionContext.debug(`Check success: ${success}`)
+
+        return !prDraft && approved && !prConflicted && !failed && (behind || !success)
       })
 
       if (rerunCandidates.length > 0) {
@@ -97,8 +100,16 @@ function allProjectsFailed(checkRunsData: ChecksListForRefResponseData): boolean
   return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunFailed(check)).length > 0
 }
 
+function allProjectsSuccess(checkRunsData: ChecksListForRefResponseData): boolean {
+  return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunSuccess(check)).length > 0
+}
+
 function checkRunFailed(run: ChecksGetResponseData): boolean {
   return run.conclusion.toLowerCase() === 'failure'
+}
+
+function checkRunSuccess(run: ChecksGetResponseData): boolean {
+  return run.conclusion.toLowerCase() === 'success'
 }
 
 function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
