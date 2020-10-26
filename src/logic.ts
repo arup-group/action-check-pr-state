@@ -16,13 +16,14 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
 
     const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0
 
-    const pullRequests = await actionContext.octokit.pulls.list({
+    const pullRequests = await actionContext.octokit.paginate(actionContext.octokit.pulls.list, {
       ...actionContext.context.repo,
       state: 'open',
-      sort: 'updated'
+      sort: 'updated',
+      direction: 'asc'
     })
 
-    const fullInfoPromise = pullRequests.data.map(async pull => ({
+    const fullInfoPromise = pullRequests.map(async pull => ({
       reviews: await actionContext.octokit.pulls.listReviews({
         ...actionContext.context.repo,
         pull_number: pull.number

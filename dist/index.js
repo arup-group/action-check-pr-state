@@ -1862,8 +1862,8 @@ function prCheck(actionContext) {
         try {
             const approvalsRequiredString = core_1.getInput('approvalsRequired');
             const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0;
-            const pullRequests = yield actionContext.octokit.pulls.list(Object.assign(Object.assign({}, actionContext.context.repo), { state: 'open', sort: 'updated' }));
-            const fullInfoPromise = pullRequests.data.map((pull) => __awaiter(this, void 0, void 0, function* () {
+            const pullRequests = yield actionContext.octokit.paginate(actionContext.octokit.pulls.list, Object.assign(Object.assign({}, actionContext.context.repo), { state: 'open', sort: 'updated', direction: 'asc' }));
+            const fullInfoPromise = pullRequests.map((pull) => __awaiter(this, void 0, void 0, function* () {
                 return ({
                     reviews: yield actionContext.octokit.pulls.listReviews(Object.assign(Object.assign({}, actionContext.context.repo), { pull_number: pull.number })),
                     pr: yield actionContext.octokit.pulls.get(Object.assign(Object.assign({}, actionContext.context.repo), { pull_number: pull.number })),
