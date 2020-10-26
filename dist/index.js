@@ -1887,7 +1887,9 @@ function prCheck(actionContext) {
                     actionContext.debug(`Already in completed state: ${completed}`);
                     const behind = branchBehindDevelop(pull.pr.data);
                     actionContext.debug(`behind: ${behind}`);
-                    return approved && !prConflicted && (!completed || behind);
+                    const prDraft = draft(pull.pr.data);
+                    actionContext.debug(`draft: ${prDraft}`);
+                    return !prDraft && approved && !prConflicted && (!completed || behind);
                 });
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1927,6 +1929,9 @@ function branchBehindDevelop(pr) {
 }
 function conflicted(pr) {
     return pr.mergeable_state.toLowerCase() === 'dirty';
+}
+function draft(pr) {
+    return pr.draft;
 }
 
 

@@ -60,7 +60,10 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const behind = branchBehindDevelop(pull.pr.data)
         actionContext.debug(`behind: ${behind}`)
 
-        return approved && !prConflicted && (!completed || behind)
+        const prDraft = draft(pull.pr.data)
+        actionContext.debug(`draft: ${prDraft}`)
+
+        return !prDraft && approved && !prConflicted && (!completed || behind)
       })
 
       if (rerunCandidates.length > 0) {
@@ -107,4 +110,8 @@ function branchBehindDevelop(pr: PullsGetResponseData): boolean {
 
 function conflicted(pr: PullsGetResponseData): boolean {
   return pr.mergeable_state.toLowerCase() === 'dirty'
+}
+
+function draft(pr: PullsGetResponseData): boolean {
+  return pr.draft
 }
