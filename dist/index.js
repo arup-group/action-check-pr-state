@@ -1878,10 +1878,11 @@ function prCheck(actionContext) {
             else {
                 actionContext.debug('No Check in progress');
                 const rerunCandidates = fullInfo.filter(pull => {
+                    actionContext.debug(`pull number: ${pull.pr.data.number}`);
                     const approved = isApproved(pull.reviews.data, approvalsRequired);
                     actionContext.debug(`Has two approvals: ${approved}`);
                     const prConflicted = conflicted(pull.pr.data);
-                    actionContext.debug(`Conflicted PR: ${conflicted}`);
+                    actionContext.debug(`Conflicted PR: ${prConflicted}`);
                     const completed = allProjectsAlreadyCompleted(pull.checks.data);
                     actionContext.debug(`Already in completed state: ${completed}`);
                     const behind = branchBehindDevelop(pull.pr.data);
