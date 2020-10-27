@@ -1891,6 +1891,8 @@ function prCheck(actionContext) {
                     actionContext.debug(`draft: ${prDraft}`);
                     const success = allProjectsSuccess(pull.checks.data);
                     actionContext.debug(`Check success: ${success}`);
+                    const check = pull.checks.data.check_runs.filter(run => run.name === 'All Projects');
+                    actionContext.debug(`Check Status: ${check.length !== 0 ? check[0].status : 'no all projects check'}`);
                     return !prDraft && approved && !prConflicted && !failed && (behind || !success);
                 });
                 if (rerunCandidates.length > 0) {
