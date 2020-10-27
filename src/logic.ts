@@ -67,10 +67,10 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const success = allProjectsSuccess(pull.checks.data)
         actionContext.debug(`Check success: ${success}`)
 
-        const check = pull.checks.data.check_runs.filter(run => run.name === 'All Projects')
-        actionContext.debug(`Check Status: ${check.length !== 0 ? check[0].status : 'no all projects check'}`)
+        const disableAutoCiLabel = disableLabel(pull.pr.data)
+        actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`)
 
-        return !prDraft && approved && !prConflicted && !failed && (behind || !success)
+        return !prDraft && approved && !prConflicted && !failed && !disableAutoCiLabel && (behind || !success)
       })
 
       if (rerunCandidates.length > 0) {
@@ -129,4 +129,8 @@ function conflicted(pr: PullsGetResponseData): boolean {
 
 function draft(pr: PullsGetResponseData): boolean {
   return pr.draft
+}
+
+function disableLabel(pr: PullsGetResponseData): boolean {
+  return pr.labels.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0
 }

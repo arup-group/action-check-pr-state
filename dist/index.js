@@ -1891,9 +1891,9 @@ function prCheck(actionContext) {
                     actionContext.debug(`draft: ${prDraft}`);
                     const success = allProjectsSuccess(pull.checks.data);
                     actionContext.debug(`Check success: ${success}`);
-                    const check = pull.checks.data.check_runs.filter(run => run.name === 'All Projects');
-                    actionContext.debug(`Check Status: ${check.length !== 0 ? check[0].status : 'no all projects check'}`);
-                    return !prDraft && approved && !prConflicted && !failed && (behind || !success);
+                    const disableAutoCiLabel = disableLabel(pull.pr.data);
+                    actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`);
+                    return !prDraft && approved && !prConflicted && !failed && !disableAutoCiLabel && (behind || !success);
                 });
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1942,6 +1942,9 @@ function conflicted(pr) {
 }
 function draft(pr) {
     return pr.draft;
+}
+function disableLabel(pr) {
+    return pr.labels.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0;
 }
 
 
