@@ -1881,6 +1881,8 @@ function prCheck(actionContext) {
                     actionContext.debug(`pull number: ${pull.pr.data.number}`);
                     const approved = isApproved(pull.reviews.data, approvalsRequired);
                     actionContext.debug(`Has two approvals: ${approved}`);
+                    const mergeable_state = pull.pr.data.mergeable_state;
+                    actionContext.debug(`mergeable state: ${mergeable_state}`);
                     const prConflicted = conflicted(pull.pr.data);
                     actionContext.debug(`Conflicted PR: ${prConflicted}`);
                     const failed = allProjectsFailed(pull.checks.data);
