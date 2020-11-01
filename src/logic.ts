@@ -61,6 +61,9 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const failed = allProjectsFailed(pull.checks.data)
         actionContext.debug(`PR failed: ${failed}`)
 
+        const prUnknownMergeState = unknown(pull.pr.data)
+        actionContext.debug(`PR unknown merge state: ${unknown}`)
+
         const behind = branchBehindDevelop(pull.pr.data)
         actionContext.debug(`behind: ${behind}`)
 
@@ -73,7 +76,15 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const disableAutoCiLabel = disableLabel(pull.pr.data)
         actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`)
 
-        return !prDraft && approved && !prConflicted && !failed && !disableAutoCiLabel && (behind || !success)
+        return (
+          !prDraft &&
+          approved &&
+          !prConflicted &&
+          !failed &&
+          !prUnknownMergeState &&
+          !disableAutoCiLabel &&
+          (behind || !success)
+        )
       })
 
       if (rerunCandidates.length > 0) {
@@ -124,6 +135,10 @@ function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
 
 function branchBehindDevelop(pr: PullsGetResponseData): boolean {
   return pr.mergeable_state.toLowerCase() === 'behind'
+}
+
+function unknown(pr: PullsGetResponseData): boolean {
+  return pr.mergeable_state.toLowerCase() === 'unknown'
 }
 
 function conflicted(pr: PullsGetResponseData): boolean {

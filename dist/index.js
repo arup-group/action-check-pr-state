@@ -1887,6 +1887,8 @@ function prCheck(actionContext) {
                     actionContext.debug(`Conflicted PR: ${prConflicted}`);
                     const failed = allProjectsFailed(pull.checks.data);
                     actionContext.debug(`PR failed: ${failed}`);
+                    const prUnknownMergeState = unknown(pull.pr.data);
+                    actionContext.debug(`PR unknown merge state: ${unknown}`);
                     const behind = branchBehindDevelop(pull.pr.data);
                     actionContext.debug(`behind: ${behind}`);
                     const prDraft = draft(pull.pr.data);
@@ -1895,7 +1897,7 @@ function prCheck(actionContext) {
                     actionContext.debug(`Check success: ${success}`);
                     const disableAutoCiLabel = disableLabel(pull.pr.data);
                     actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`);
-                    return !prDraft && approved && !prConflicted && !failed && !disableAutoCiLabel && (behind || !success);
+                    return !prDraft && approved && !prConflicted && !failed && !prUnknownMergeState && !disableAutoCiLabel && (behind || !success);
                 });
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1938,6 +1940,9 @@ function allProjectsCheckRun(run) {
 }
 function branchBehindDevelop(pr) {
     return pr.mergeable_state.toLowerCase() === 'behind';
+}
+function unknown(pr) {
+    return pr.mergeable_state.toLowerCase() === 'unknown';
 }
 function conflicted(pr) {
     return pr.mergeable_state.toLowerCase() === 'dirty';
