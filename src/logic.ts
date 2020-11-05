@@ -1,5 +1,6 @@
 import {ActionContext} from './action-context'
 import {getInput} from '@actions/core'
+import fetch from 'node-fetch'
 import {
   ChecksGetResponseData,
   PullsListReviewsResponseData,
@@ -7,6 +8,7 @@ import {
   PullsGetResponseData
 } from '@octokit/types/dist-types/generated/Endpoints'
 
+const base64token = Buffer.from(`PAT:${process.env.DEVOPS_TOKEN}`).toString('base64')
 /*
  * Main logic
  */
@@ -40,7 +42,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
 
     const fullInfo = await Promise.all(fullInfoPromise)
 
-    const checkInProgress = fullInfo.filter(pull => allProjectsCheckHasInProgressStatus(pull.checks.data)).length > 0
+    const checkInProgress = process.env.DEVOPS_TOKEN ? await checkInDevops() : checkInPrs(fullInfo)
 
     if (checkInProgress) {
       actionContext.debug('check in progress')
@@ -151,4 +153,25 @@ function draft(pr: PullsGetResponseData): boolean {
 
 function disableLabel(pr: PullsGetResponseData): boolean {
   return pr.labels?.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0
+}
+
+async function checkInDevops(): Promise<boolean> {
+  const jobs = await fetch(
+    'https://dev.azure.com/oasys-software/_apis/distributedtask/pools/12/jobrequests?api-version=5.1',
+    {
+      headers: {
+        Authorization: `Basic ${base64token}`
+      }
+    }
+  )
+
+  const inPool = await jobs.json()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return inPool.value.filter((job: any) => !job.result && job.definition.name === 'All Projects').length > 0
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkInPrs(fullInfo: any): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return fullInfo.filter((pull: any) => allProjectsCheckHasInProgressStatus(pull.checks.data)).length > 0
 }

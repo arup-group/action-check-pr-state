@@ -1851,9 +1851,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prCheck = void 0;
 const core_1 = __webpack_require__(186);
+const node_fetch_1 = __importDefault(__webpack_require__(467));
+const base64token = Buffer.from(`PAT:${process.env.DEVOPS_TOKEN}`).toString('base64');
 /*
  * Main logic
  */
@@ -1871,7 +1876,7 @@ function prCheck(actionContext) {
                 });
             }));
             const fullInfo = yield Promise.all(fullInfoPromise);
-            const checkInProgress = fullInfo.filter(pull => allProjectsCheckHasInProgressStatus(pull.checks.data)).length > 0;
+            const checkInProgress = process.env.DEVOPS_TOKEN ? yield checkInDevops() : checkInPrs(fullInfo);
             if (checkInProgress) {
                 actionContext.debug('check in progress');
             }
@@ -1964,6 +1969,23 @@ function draft(pr) {
 function disableLabel(pr) {
     var _a;
     return ((_a = pr.labels) === null || _a === void 0 ? void 0 : _a.filter(label => label.name === 'disable-auto-ci-trigger').length) !== 0;
+}
+function checkInDevops() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const jobs = yield node_fetch_1.default('https://dev.azure.com/oasys-software/_apis/distributedtask/pools/12/jobrequests?api-version=5.1', {
+            headers: {
+                Authorization: `Basic ${base64token}`
+            }
+        });
+        const inPool = yield jobs.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return inPool.value.filter((job) => !job.result && job.definition.name === 'All Projects').length > 0;
+    });
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkInPrs(fullInfo) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return fullInfo.filter((pull) => allProjectsCheckHasInProgressStatus(pull.checks.data)).length > 0;
 }
 
 
