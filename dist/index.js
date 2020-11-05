@@ -1888,7 +1888,7 @@ function prCheck(actionContext) {
                     const failed = allProjectsFailed(pull.checks.data);
                     actionContext.debug(`PR failed: ${failed}`);
                     const prUnknownMergeState = unknown(pull.pr.data);
-                    actionContext.debug(`PR unknown merge state: ${unknown}`);
+                    actionContext.debug(`PR unknown merge state: ${prUnknownMergeState}`);
                     const behind = branchBehindDevelop(pull.pr.data);
                     actionContext.debug(`behind: ${behind}`);
                     const prDraft = draft(pull.pr.data);
@@ -1897,7 +1897,13 @@ function prCheck(actionContext) {
                     actionContext.debug(`Check success: ${success}`);
                     const disableAutoCiLabel = disableLabel(pull.pr.data);
                     actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`);
-                    return !prDraft && approved && !prConflicted && !failed && !prUnknownMergeState && !disableAutoCiLabel && (behind || !success);
+                    return (!prDraft &&
+                        approved &&
+                        !prConflicted &&
+                        !failed &&
+                        !prUnknownMergeState &&
+                        !disableAutoCiLabel &&
+                        (behind || !success));
                 });
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1939,13 +1945,16 @@ function allProjectsCheckRun(run) {
     return run.name === 'All Projects';
 }
 function branchBehindDevelop(pr) {
-    return pr.mergeable_state.toLowerCase() === 'behind';
+    var _a;
+    return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'behind';
 }
 function unknown(pr) {
-    return pr.mergeable_state.toLowerCase() === 'unknown';
+    var _a;
+    return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'unknown';
 }
 function conflicted(pr) {
-    return pr.mergeable_state.toLowerCase() === 'dirty';
+    var _a;
+    return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'dirty';
 }
 function draft(pr) {
     return pr.draft;

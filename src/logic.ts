@@ -62,7 +62,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         actionContext.debug(`PR failed: ${failed}`)
 
         const prUnknownMergeState = unknown(pull.pr.data)
-        actionContext.debug(`PR unknown merge state: ${unknown}`)
+        actionContext.debug(`PR unknown merge state: ${prUnknownMergeState}`)
 
         const behind = branchBehindDevelop(pull.pr.data)
         actionContext.debug(`behind: ${behind}`)
@@ -134,15 +134,15 @@ function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
 }
 
 function branchBehindDevelop(pr: PullsGetResponseData): boolean {
-  return pr.mergeable_state.toLowerCase() === 'behind'
+  return pr.mergeable_state?.toLowerCase() === 'behind'
 }
 
 function unknown(pr: PullsGetResponseData): boolean {
-  return pr.mergeable_state.toLowerCase() === 'unknown'
+  return pr.mergeable_state?.toLowerCase() === 'unknown'
 }
 
 function conflicted(pr: PullsGetResponseData): boolean {
-  return pr.mergeable_state.toLowerCase() === 'dirty'
+  return pr.mergeable_state?.toLowerCase() === 'dirty'
 }
 
 function draft(pr: PullsGetResponseData): boolean {
