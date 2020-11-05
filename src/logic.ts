@@ -122,11 +122,11 @@ function allProjectsSuccess(checkRunsData: ChecksListForRefResponseData): boolea
 }
 
 function checkRunFailed(run: ChecksGetResponseData): boolean {
-  return run.conclusion.toLowerCase() === 'failure'
+  return run.conclusion?.toLowerCase() === 'failure'
 }
 
 function checkRunSuccess(run: ChecksGetResponseData): boolean {
-  return run.conclusion.toLowerCase() === 'success'
+  return run.conclusion?.toLowerCase() === 'success'
 }
 
 function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
@@ -150,5 +150,5 @@ function draft(pr: PullsGetResponseData): boolean {
 }
 
 function disableLabel(pr: PullsGetResponseData): boolean {
-  return pr.labels.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0
+  return pr.labels?.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0
 }

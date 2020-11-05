@@ -1936,10 +1936,12 @@ function allProjectsSuccess(checkRunsData) {
     return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunSuccess(check)).length > 0;
 }
 function checkRunFailed(run) {
-    return run.conclusion.toLowerCase() === 'failure';
+    var _a;
+    return ((_a = run.conclusion) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'failure';
 }
 function checkRunSuccess(run) {
-    return run.conclusion.toLowerCase() === 'success';
+    var _a;
+    return ((_a = run.conclusion) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'success';
 }
 function allProjectsCheckRun(run) {
     return run.name === 'All Projects';
@@ -1960,7 +1962,8 @@ function draft(pr) {
     return pr.draft;
 }
 function disableLabel(pr) {
-    return pr.labels.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0;
+    var _a;
+    return ((_a = pr.labels) === null || _a === void 0 ? void 0 : _a.filter(label => label.name === 'disable-auto-ci-trigger').length) !== 0;
 }
 
 
