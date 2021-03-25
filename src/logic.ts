@@ -156,18 +156,29 @@ function disableLabel(pr: PullsGetResponseData): boolean {
 }
 
 async function checkInDevops(): Promise<boolean> {
-  const jobs = await fetch(
-    'https://dev.azure.com/oasys-software/_apis/distributedtask/pools/12/jobrequests?api-version=5.1',
-    {
-      headers: {
-        Authorization: `Basic ${base64token}`
-      }
-    }
-  )
+  const poolIds = ['12', '22', '24']
 
-  const inPool = await jobs.json()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return inPool.value.filter((job: any) => !job.result && job.definition.name === 'All Projects').length > 0
+  const jobs = poolIds.map(async poolId => {
+    const response = await fetch(
+      `https://dev.azure.com/oasys-software/_apis/distributedtask/pools/${poolId}/jobrequests?api-version=5.1`,
+      {
+        headers: {
+          Authorization: `Basic ${base64token}`
+        }
+      }
+    )
+
+    return await response.json()
+  })
+
+  const resolvedJobs = await Promise.all(jobs)
+
+  return (
+    resolvedJobs.filter(inPool => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return inPool.value.filter((job: any) => !job.result && job.definition.name === 'All Projects').length > 0
+    }).length > 0
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
