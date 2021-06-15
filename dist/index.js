@@ -1972,7 +1972,7 @@ function disableLabel(pr) {
 }
 function checkInDevops() {
     return __awaiter(this, void 0, void 0, function* () {
-        const poolIds = ['12', '22', '24', '25', '27', '28'];
+        const poolIds = ['12', '22', '24', '25', '27', '28', '29'];
         const jobs = poolIds.map((poolId) => __awaiter(this, void 0, void 0, function* () {
             const response = yield node_fetch_1.default(`https://dev.azure.com/oasys-software/_apis/distributedtask/pools/${poolId}/jobrequests?api-version=5.1`, {
                 headers: {
