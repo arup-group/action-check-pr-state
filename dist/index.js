@@ -1866,8 +1866,13 @@ function prCheck(actionContext) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const approvalsRequiredString = core_1.getInput('approvalsRequired');
+            const pr = core_1.getInput('pr');
             const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0;
-            const pullRequests = yield actionContext.octokit.paginate(actionContext.octokit.pulls.list, Object.assign(Object.assign({}, actionContext.context.repo), { state: 'open', sort: 'updated', direction: 'asc' }));
+            let pullRequests = yield actionContext.octokit.paginate(actionContext.octokit.pulls.list, Object.assign(Object.assign({}, actionContext.context.repo), { state: 'open', sort: 'updated', direction: 'asc' }));
+            if (pr) {
+                // filter by pr number if supplied
+                pullRequests = pullRequests.filter(pullRequest => pullRequest.number === +pr);
+            }
             const fullInfoPromise = pullRequests.map((pull) => __awaiter(this, void 0, void 0, function* () {
                 return ({
                     reviews: yield actionContext.octokit.pulls.listReviews(Object.assign(Object.assign({}, actionContext.context.repo), { pull_number: pull.number })),

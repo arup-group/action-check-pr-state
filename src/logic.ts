@@ -15,15 +15,21 @@ const base64token = Buffer.from(`PAT:${process.env.DEVOPS_TOKEN}`).toString('bas
 export async function prCheck(actionContext: ActionContext): Promise<void> {
   try {
     const approvalsRequiredString = getInput('approvalsRequired')
+    const pr = getInput('pr')
 
     const approvalsRequired = approvalsRequiredString ? Number(approvalsRequiredString) : 0
 
-    const pullRequests = await actionContext.octokit.paginate(actionContext.octokit.pulls.list, {
+    let pullRequests = await actionContext.octokit.paginate(actionContext.octokit.pulls.list, {
       ...actionContext.context.repo,
       state: 'open',
       sort: 'updated',
       direction: 'asc'
     })
+
+    if (pr) {
+      // filter by pr number if supplied
+      pullRequests = pullRequests.filter(pullRequest => pullRequest.number === +pr)
+    }
 
     const fullInfoPromise = pullRequests.map(async pull => ({
       reviews: await actionContext.octokit.pulls.listReviews({

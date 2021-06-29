@@ -5,6 +5,9 @@ inputs:
   approvalsRequired:
     required: true
     description: 'number of reviews required'
+  pr:
+    required: false
+    description: run this check against a single PR
 runs:
   using: 'node12'
   main: 'dist/index.js'
