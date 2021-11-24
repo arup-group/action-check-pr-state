@@ -162,7 +162,7 @@ function disableLabel(pr: PullsGetResponseData): boolean {
 }
 
 async function checkInDevops(): Promise<boolean> {
-  const poolIds = ['12', '22', '24', '25', '27', '28', '29']
+  const poolIds = ['12', '22', '24', '25', '27', '28', '29', '31']
 
   const jobs = poolIds.map(async poolId => {
     const response = await fetch(
