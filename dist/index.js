@@ -1913,6 +1913,7 @@ function prCheck(actionContext) {
                         !failed &&
                         !prUnknownMergeState &&
                         !disableAutoCiLabel &&
+                        !branchBlocked &&
                         (behind || !success));
                 });
                 if (rerunCandidates.length > 0) {
@@ -1959,6 +1960,10 @@ function allProjectsCheckRun(run) {
 function branchBehindDevelop(pr) {
     var _a;
     return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'behind';
+}
+function branchBlocked(pr) {
+    var _a;
+    return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'blocked';
 }
 function unknown(pr) {
     var _a;

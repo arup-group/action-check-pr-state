@@ -91,6 +91,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
           !failed &&
           !prUnknownMergeState &&
           !disableAutoCiLabel &&
+          !branchBlocked &&
           (behind || !success)
         )
       })
@@ -143,6 +144,10 @@ function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
 
 function branchBehindDevelop(pr: PullsGetResponseData): boolean {
   return pr.mergeable_state?.toLowerCase() === 'behind'
+}
+
+function branchBlocked(pr: PullsGetResponseData): boolean {
+  return pr.mergeable_state?.toLowerCase() === 'blocked'
 }
 
 function unknown(pr: PullsGetResponseData): boolean {
