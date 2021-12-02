@@ -1923,6 +1923,7 @@ function prCheck(actionContext) {
                     actionContext.setOutput('baseRef', rerun.pr.data.base.ref);
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
         catch (error) {
             actionContext.setFailed(error.message);
@@ -1982,7 +1983,7 @@ function disableLabel(pr) {
 }
 function checkInDevops() {
     return __awaiter(this, void 0, void 0, function* () {
-        const poolIds = ['12', '22', '24', '25', '27', '28', '29', '31'];
+        const poolIds = ['12', '22', '24', '25', '27', '28', '29', '31', '33'];
         const jobs = poolIds.map((poolId) => __awaiter(this, void 0, void 0, function* () {
             const response = yield node_fetch_1.default(`https://dev.azure.com/oasys-software/_apis/distributedtask/pools/${poolId}/jobrequests?api-version=5.1`, {
                 headers: {
