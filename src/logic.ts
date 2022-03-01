@@ -84,6 +84,9 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const disableAutoCiLabel = disableLabel(pull.pr.data)
         actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`)
 
+        const blocked = branchBlocked(pull.pr.data)
+        actionContext.debug(`blocked: ${blocked}`)
+
         return (
           !prDraft &&
           approved &&
@@ -91,7 +94,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
           !failed &&
           !prUnknownMergeState &&
           !disableAutoCiLabel &&
-          !branchBlocked &&
+          !blocked &&
           (behind || !success)
         )
       })

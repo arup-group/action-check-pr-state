@@ -1907,13 +1907,15 @@ function prCheck(actionContext) {
                     actionContext.debug(`Check success: ${success}`);
                     const disableAutoCiLabel = disableLabel(pull.pr.data);
                     actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`);
+                    const blocked = branchBlocked(pull.pr.data);
+                    actionContext.debug(`blocked: ${blocked}`);
                     return (!prDraft &&
                         approved &&
                         !prConflicted &&
                         !failed &&
                         !prUnknownMergeState &&
                         !disableAutoCiLabel &&
-                        !branchBlocked &&
+                        !blocked &&
                         (behind || !success));
                 });
                 if (rerunCandidates.length > 0) {
