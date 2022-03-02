@@ -6,8 +6,8 @@ import {prCheck} from './logic'
 async function run(): Promise<void> {
   try {
     debug('start action')
-    const token = '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'
-    // if (!token) throw ReferenceError('No Token found')
+    const token = process.env.GITHUB_TOKEN
+    if (!token) throw ReferenceError('No Token found')
     debug('attempt to run action')
     await prCheck({
       debug,
