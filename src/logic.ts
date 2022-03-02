@@ -81,11 +81,11 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
         const success = allProjectsSuccess(pull.checks.data)
         actionContext.debug(`Check success: ${success}`)
 
+        const notRan = allProjectsNotRan(pull.checks.data)
+        actionContext.debug(`Check not ran: ${notRan}`)
+
         const disableAutoCiLabel = disableLabel(pull.pr.data)
         actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`)
-
-        const blocked = branchBlocked(pull.pr.data)
-        actionContext.debug(`blocked: ${blocked}`)
 
         return (
           !prDraft &&
@@ -94,8 +94,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
           !failed &&
           !prUnknownMergeState &&
           !disableAutoCiLabel &&
-          !blocked &&
-          (behind || !success)
+          (behind || notRan)
         )
       })
 
@@ -134,6 +133,10 @@ function allProjectsSuccess(checkRunsData: ChecksListForRefResponseData): boolea
   return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunSuccess(check)).length > 0
 }
 
+function allProjectsNotRan(checkRunsData: ChecksListForRefResponseData): boolean {
+  return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check)).length === 0
+}
+
 function checkRunFailed(run: ChecksGetResponseData): boolean {
   return run.conclusion?.toLowerCase() === 'failure'
 }
@@ -148,10 +151,6 @@ function allProjectsCheckRun(run: ChecksGetResponseData): boolean {
 
 function branchBehindDevelop(pr: PullsGetResponseData): boolean {
   return pr.mergeable_state?.toLowerCase() === 'behind'
-}
-
-function branchBlocked(pr: PullsGetResponseData): boolean {
-  return pr.mergeable_state?.toLowerCase() === 'blocked'
 }
 
 function unknown(pr: PullsGetResponseData): boolean {

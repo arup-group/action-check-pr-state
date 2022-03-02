@@ -1431,9 +1431,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             core_1.debug('start action');
-            const token = process.env.GITHUB_TOKEN;
-            if (!token)
-                throw ReferenceError('No Token found');
+            const token = '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';
+            // if (!token) throw ReferenceError('No Token found')
             core_1.debug('attempt to run action');
             yield logic_1.prCheck({
                 debug: core_1.debug,
@@ -1905,18 +1904,17 @@ function prCheck(actionContext) {
                     actionContext.debug(`draft: ${prDraft}`);
                     const success = allProjectsSuccess(pull.checks.data);
                     actionContext.debug(`Check success: ${success}`);
+                    const notRan = allProjectsNotRan(pull.checks.data);
+                    actionContext.debug(`Check not ran: ${notRan}`);
                     const disableAutoCiLabel = disableLabel(pull.pr.data);
                     actionContext.debug(`disable CI checks label set: ${disableAutoCiLabel}`);
-                    const blocked = branchBlocked(pull.pr.data);
-                    actionContext.debug(`blocked: ${blocked}`);
                     return (!prDraft &&
                         approved &&
                         !prConflicted &&
                         !failed &&
                         !prUnknownMergeState &&
                         !disableAutoCiLabel &&
-                        !blocked &&
-                        (behind || !success));
+                        (behind || notRan));
                 });
                 if (rerunCandidates.length > 0) {
                     const rerun = rerunCandidates[0];
@@ -1949,6 +1947,9 @@ function allProjectsFailed(checkRunsData) {
 function allProjectsSuccess(checkRunsData) {
     return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check) && checkRunSuccess(check)).length > 0;
 }
+function allProjectsNotRan(checkRunsData) {
+    return checkRunsData.check_runs.filter(check => allProjectsCheckRun(check)).length === 0;
+}
 function checkRunFailed(run) {
     var _a;
     return ((_a = run.conclusion) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'failure';
@@ -1963,10 +1964,6 @@ function allProjectsCheckRun(run) {
 function branchBehindDevelop(pr) {
     var _a;
     return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'behind';
-}
-function branchBlocked(pr) {
-    var _a;
-    return ((_a = pr.mergeable_state) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'blocked';
 }
 function unknown(pr) {
     var _a;
