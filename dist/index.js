@@ -1431,8 +1431,9 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             core_1.debug('start action');
-            const token = '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';
-            // if (!token) throw ReferenceError('No Token found')
+            const token = process.env.GITHUB_TOKEN;
+            if (!token)
+                throw ReferenceError('No Token found');
             core_1.debug('attempt to run action');
             yield logic_1.prCheck({
                 debug: core_1.debug,
