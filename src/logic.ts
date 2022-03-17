@@ -48,7 +48,7 @@ export async function prCheck(actionContext: ActionContext): Promise<void> {
 
     const fullInfo = await Promise.all(fullInfoPromise)
 
-    const checkInProgress = process.env.DEVOPS_TOKEN ? await checkInDevops() : checkInPrs(fullInfo)
+    const checkInProgress = process.env.DEVOPS_TOKEN ? await checkInDevops(actionContext) : checkInPrs(fullInfo)
 
     if (checkInProgress) {
       actionContext.debug('check in progress')
@@ -169,7 +169,7 @@ function disableLabel(pr: PullsGetResponseData): boolean {
   return pr.labels?.filter(label => label.name === 'disable-auto-ci-trigger').length !== 0
 }
 
-async function checkInDevops(): Promise<boolean> {
+async function checkInDevops(actionContext: ActionContext): Promise<boolean> {
   const poolIds = ['12', '22', '24', '25', '27', '28', '29', '31', '33', '34']
 
   const jobs = poolIds.map(async poolId => {
@@ -186,13 +186,28 @@ async function checkInDevops(): Promise<boolean> {
   })
 
   const resolvedJobs = await Promise.all(jobs)
+  const allPools = resolvedJobs.reduce((acc, curr) => acc.concat(curr.value), [])
 
-  return (
-    resolvedJobs.filter(inPool => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return inPool.value.filter((job: any) => !job.result && job.definition.name === 'All Projects').length > 0
-    }).length > 0
-  )
+  let needToWait = false
+
+  for (const job of allPools) {
+    if (!job.result && job.definition?.name === 'All Projects') {
+      const buildLink = await fetch(job.owner._links.self.href, {
+        headers: {
+          Authorization: `Basic ${base64token}`
+        }
+      })
+      const build = await buildLink.json()
+
+      if (build.sourceBranch !== 'refs/heads/develop') {
+        actionContext.debug(`All Projects build triggered by: ${build.sourceBranch}`)
+        needToWait = true
+        break
+      }
+    }
+  }
+
+  return needToWait
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

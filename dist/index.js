@@ -1881,7 +1881,7 @@ function prCheck(actionContext) {
                 });
             }));
             const fullInfo = yield Promise.all(fullInfoPromise);
-            const checkInProgress = process.env.DEVOPS_TOKEN ? yield checkInDevops() : checkInPrs(fullInfo);
+            const checkInProgress = process.env.DEVOPS_TOKEN ? yield checkInDevops(actionContext) : checkInPrs(fullInfo);
             if (checkInProgress) {
                 actionContext.debug('check in progress');
             }
@@ -1981,7 +1981,8 @@ function disableLabel(pr) {
     var _a;
     return ((_a = pr.labels) === null || _a === void 0 ? void 0 : _a.filter(label => label.name === 'disable-auto-ci-trigger').length) !== 0;
 }
-function checkInDevops() {
+function checkInDevops(actionContext) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const poolIds = ['12', '22', '24', '25', '27', '28', '29', '31', '33', '34'];
         const jobs = poolIds.map((poolId) => __awaiter(this, void 0, void 0, function* () {
@@ -1993,10 +1994,24 @@ function checkInDevops() {
             return yield response.json();
         }));
         const resolvedJobs = yield Promise.all(jobs);
-        return (resolvedJobs.filter(inPool => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return inPool.value.filter((job) => !job.result && job.definition.name === 'All Projects').length > 0;
-        }).length > 0);
+        const allPools = resolvedJobs.reduce((acc, curr) => acc.concat(curr.value), []);
+        let needToWait = false;
+        for (const job of allPools) {
+            if (!job.result && ((_a = job.definition) === null || _a === void 0 ? void 0 : _a.name) === 'All Projects') {
+                const buildLink = yield node_fetch_1.default(job.owner._links.self.href, {
+                    headers: {
+                        Authorization: `Basic ${base64token}`
+                    }
+                });
+                const build = yield buildLink.json();
+                if (build.sourceBranch !== 'refs/heads/develop') {
+                    actionContext.debug(`All Projects build triggered by: ${build.sourceBranch}`);
+                    needToWait = true;
+                    break;
+                }
+            }
+        }
+        return needToWait;
     });
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -7,14 +7,14 @@ on: # rebuild any PRs and main branch changes
       - 'releases/*'
 
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          npm install
-      - run: |
-          npm run all
+  # build: # make sure build/ci work properly
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - run: |
+  #         npm install
+  #     - run: |
+  #         npm run all
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
@@ -23,4 +23,5 @@ jobs:
         with:
           requiredReviews: 1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: 252a0c0eb9b875807fa9127db18a0df40d2c920e
+          DEVOPS_TOKEN: 4sdn7msnuwct73qewenzc2l52u3ynncbel2k4djag4q73zqpnvsa
