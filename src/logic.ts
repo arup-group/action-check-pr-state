@@ -199,10 +199,20 @@ async function checkInDevops(actionContext: ActionContext): Promise<boolean> {
       })
       const build = await buildLink.json()
 
-      if (build.sourceBranch !== 'refs/heads/develop') {
-        actionContext.debug(`All Projects build triggered by: ${build.sourceBranch}`)
-        needToWait = true
-        break
+      if (build.reason === 'pullRequest') {
+        const pr = build.triggerInfo['pr.number'];
+        if(!pr) break;
+        actionContext.debug(`Checking ${pr} to see if it's been approved`)
+        const reviews = await actionContext.octokit.pulls.listReviews({
+          ...actionContext.context.repo,
+          pull_number: +pr
+        })
+        // Only wait for PRs that have been approved
+        if (isApproved(reviews.data, 2)) {
+          actionContext.debug(`All Projects build triggered by: ${build.sourceBranch}`)
+          needToWait = true
+          break
+        }
       }
     }
   }
