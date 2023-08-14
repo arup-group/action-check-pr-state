@@ -9,5 +9,5 @@ inputs:
     required: false
     description: run this check against a single PR
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
